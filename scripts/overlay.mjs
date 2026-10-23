@@ -28,6 +28,30 @@ const server = Bun.serve({
 			if (srv.upgrade(req)) return undefined;
 			return new Response('upgrade failed', { status: 500 });
 		}
+		if (url.pathname === '/locate' && req.method === 'POST') {
+			// coordinate-aware vision: {b64} -> qwen location JSON -> broadcast with x/y
+			try {
+				const { b64, note } = await req.json();
+				const { locate } = await import('vision-kit');
+				const { resolveOpenAICompat } = await import('../src/vendor-omp/openai-compat.mjs');
+				const ep = resolveOpenAICompat() || {};
+				const loc = await locate({ b64, note, key: ep.apiKey });
+				if (loc.x && loc.y) {
+					state.vision = `@${Math.round(loc.x)},${Math.round(loc.y)} ${loc.what || '?'}`;
+					const msg = JSON.stringify({
+						phase: 'vision',
+						x: loc.x,
+						y: loc.y,
+						what: loc.what || 'something',
+						event: `📍 ${loc.what || 'target'} at ${Math.round(loc.x)},${Math.round(loc.y)}`,
+					});
+					for (const c of clients) c.send(msg);
+				}
+				return new Response(JSON.stringify(loc), { headers: { 'Content-Type': 'application/json' } });
+			} catch (e) {
+				return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+			}
+		}
 		if (url.pathname === '/post' && req.method === 'POST') {
 			const body = await req.json();
 			Object.assign(state, body);

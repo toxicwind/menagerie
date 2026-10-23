@@ -20,7 +20,8 @@ async function captureAndNarrate() {
     const b64 = dataUrl.split(',')[1] || '';
     if (b64.length < 500) return;
     const persona = PERSONAE[tick++ % PERSONAE.length];
-    const res = await fetch(`${SERVER}/vision`, {
+    const useLocate = tick % 2 === 1;
+    const res = await fetch(`${SERVER}/${useLocate ? 'locate' : 'vision'}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ b64, note: `Current page: ${tab.title || ''}`, persona }),
@@ -32,6 +33,10 @@ async function captureAndNarrate() {
     /* offline server or transient — next tick */
   }
 }
+
+chrome.action.onClicked.addListener((tab) => {
+  if (tab && tab.id !== undefined) chrome.sidePanel.open({ tabId: tab.id });
+});
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.alarms.create('vision-fix', { periodInMinutes: 0.2 });

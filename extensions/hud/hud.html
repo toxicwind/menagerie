@@ -3,46 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <style>
-  html, body { margin: 0; padding: 0; background: rgba(8,10,16,.35); overflow: hidden; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-  .hud {
-    position: fixed; top: 16px; right: 16px; width: 300px; z-index: 2147483647;
-    background: linear-gradient(160deg, rgba(16,18,26,.72), rgba(10,12,18,.85));
-    border: 1px solid rgba(122, 162, 247, .35); border-radius: 18px; padding: 14px 16px;
-    backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0,0,0,.55);
-    color: #e8eaf0; font-size: 12px; pointer-events: none;
-  }
-  .hud .phase { font-size: 13px; font-weight: 700; letter-spacing: .4px; color: #9ecbff; }
-  .hud .state { margin-top: 3px; color: #b9c2d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hud .rows { margin-top: 10px; display: grid; gap: 7px; }
-  .hud .row .lbl { display: flex; justify-content: space-between; color: #8f98ad; font-size: 11px; margin-bottom: 3px; }
-  .hud .row .bar { height: 6px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
-  .hud .row .bar .fill { height: 100%; width: 0; background: linear-gradient(90deg, #4f9dff, #7d5cff); transition: width .45s ease; }
-  .hud .row .bar .fill.err { background: linear-gradient(90deg, #ff5d5d, #ff8a5c); }
-  .hud .events { margin-top: 10px; max-height: 130px; overflow: hidden; display: grid; gap: 3px; }
-  .hud .events .ev { color: #7f88a0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .agent-host { position: fixed; bottom: 16px; width: 190px; height: 190px; z-index: 2147483647; pointer-events: none; }
-  .agent-sprite { position: fixed; bottom: 14px; width: 175px; height: auto; image-rendering: pixelated;
-    z-index: 2147483646; pointer-events: none; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.45); background: rgba(255,255,255,.06); padding: 6px; }
-  #sprite-clippy { left: 14px; }
-  #sprite-bonzi { right: 14px; }
-  #sprite-rowdy { left: 200px; bottom: 184px; width: 150px; }
-  .mg-ball { position: absolute; bottom: 150px; background: rgba(20,22,28,.94); border: 1px solid rgba(255,255,255,.25);
-    border-radius: 12px; padding: 8px 12px; color: #e8eaf0; font: 11px/1.45 ui-monospace,Consolas,monospace;
-    white-space: nowrap; max-width: 260px; box-shadow: 0 6px 24px rgba(0,0,0,.5); pointer-events: none; }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  #agent-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  img { max-width: 100%; max-height: 100%; image-rendering: pixelated; pointer-events: none;
+    border-radius: 12px; background: rgba(255,255,255,.05); }
 </style>
 </head>
 <body>
-<div class="hud">
-  <div class="phase" id="phase">menagerie</div>
-  <div class="state" id="state">◌ waiting…</div>
-  <div class="rows" id="rows"></div>
-  <div class="events" id="events"></div>
-</div>
-<img class="agent-sprite" id="sprite-clippy" src="clippy/agents/Clippy/map.png" alt="Clippy">
-<img class="agent-sprite" id="sprite-bonzi" src="clippy/agents/Bonzi/map.png" alt="Bonzi">
-<img class="agent-sprite" id="sprite-rowdy" src="clippy/agents/rowdy/map.png" alt="Rowdy">
-
-<script src="clippy/extras/jquery.min.js"></script>
-<script src="clippy/build/clippy.min.js"></script>
-<script src="hud.js"></script></body>
+<div id="agent-box"></div>
+<script src="hud.js"></script>
+</body>
 </html>

@@ -1,17 +1,23 @@
 {
   "manifest_version": 3,
   "name": "menagerie hud",
-  "version": "0.2.0",
-  "description": "An automation age spirit-haunted by Clippy. Glass HUD + agent cast (Clippy, Bonzi, Links…) over every page.",
+  "version": "0.4.0",
+  "description": "An automation age spirit-haunted by Clippy. The menagerie as a browser side panel: glass HUD, agent cast, vision narrations. Part of the UI, never part of the page.",
   "permissions": [
-    "storage",
+    "sidePanel",
     "activeTab",
     "tabs",
     "alarms"
   ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "menagerie hud"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -27,6 +33,7 @@
     {
       "resources": [
         "hud.html",
+        "hud-roam.js",
         "clippy/*"
       ],
       "matches": [
@@ -34,7 +41,7 @@
       ]
     }
   ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  "host_permissions": [
+    "<all_urls>"
+  ]
 }

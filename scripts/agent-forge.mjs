@@ -56,6 +56,33 @@ async function generateImage(endpoint, apiKey, prompt, model, size) {
 	throw new Error('image endpoint returned no data');
 }
 
+/** Fast path: llm4free direct client. Proven lane first (NoLoginTool/flux), auto as fallback. */
+async function generateFast(prompt, outPath) {
+	const py = 'C:/Users/beebe/AppData/Local/Programs/Python/Python313/python.exe';
+	const script = `
+import base64, urllib.request
+from llm4free.client import Client
+c = Client()
+out = r'${outPath.replace(/\\/g, '\\\\')}'
+def grab(r):
+    img = r.data[0]
+    b64 = getattr(img, 'b64_json', None)
+    url = getattr(img, 'url', None)
+    if b64: open(out, 'wb').write(base64.b64decode(b64))
+    elif url: urllib.request.urlretrieve(url, out)
+    return bool(img)
+try:
+    print('OK' if grab(c.images.generate(prompt=${JSON.stringify(prompt)})) else 'EMPTY')
+except Exception as e:
+    print('FAIL ' + repr(e)[:120])
+`;
+	const { spawnSync } = await import('node:child_process');
+	const r = spawnSync(py, ['-c', script], { encoding: 'utf8', timeout: 100_000 });
+	if (r.status !== 0) throw new Error('llm4free fast lane failed: ' + (r.stderr || '').slice(0, 140));
+	const line = r.stdout.trim().split('\n').pop();
+	if (line !== 'OK') throw new Error('llm4free fast lane: ' + line);
+}
+
 export async function main(args = {}) {
 	loadEnv();
 	const prompt = args.prompt || process.env.FORGE_PROMPT;
@@ -71,11 +98,19 @@ export async function main(args = {}) {
 	const agentName = name(prompt);
 	const dir = join(root, 'assets', 'agents', agentName);
 	mkdirSync(dir, { recursive: true });
-
-	console.log(`[forge] generating '${agentName}' via ${ep.baseUrl} (model=${model})`);
-	const png = await generateImage(ep.baseUrl, ep.apiKey, prompt, model, size);
 	const pngPath = join(dir, 'map.png');
-	writeFileSync(pngPath, png);
+
+	if (args.lib || !ep || /127\.0\.0\.1:8010|localhost:8010/.test(ep.baseUrl || '')) {
+		console.log(`[forge] fast lane (llm4free direct client) -> ${pngPath}`);
+		await generateFast(prompt, pngPath);
+	} else {
+		console.log(`[forge] generating '${agentName}' via ${ep.baseUrl} (model=${model})`);
+		const png = await generateImage(ep.baseUrl, ep.apiKey, prompt, model, size);
+		writeFileSync(pngPath, png);
+	}
+	if (!existsSync(pngPath) || (await Bun.file(pngPath).size()) < 500) {
+		throw new Error('forge: no image produced (fast or http lane)');
+	}
 
 	const manifest = {
 		name: agentName,
@@ -112,6 +147,7 @@ if (existsSync(join(root, 'package.json')) && process.argv[1] === fileURLToPath(
 			grid: { type: 'string' },
 			model: { type: 'string' },
 			size: { type: 'string' },
+			lib: { type: 'boolean' },
 		},
 	});
 	process.exit(await main(values));

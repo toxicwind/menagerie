@@ -113,35 +113,26 @@
   // agentic feed: vision narrations steer the speaker toward the page's content
   const order = ['Clippy', 'Bonzi', 'rowdy'];
   let tick = 0;
-  try {
-    const ws = new WebSocket('ws://127.0.0.1:8734/ws');
-    ws.onmessage = (m) => {
-      const s = JSON.parse(m.data);
-      if (s.phase && s.phase !== (window.__lastPhase || '')) {
-        window.__lastPhase = s.phase;
-        burst();
-      }
-      if (s.event) {
-        const who = order[tick++ % 3];
-        const f = frames.find((x) => x.slot.name === who);
+  // transport: extension service worker relays WS (no PNA prompt from the page)
+  chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+    if (!msg || !msg.mg || !msg.payload) return;
+    const s = msg.payload;
+    if (s.event) {
+      const who = order[tick++ % 3];
+      const f = frames.find((x) => x.slot.name === who);
+      if (typeof s.x === 'number' && typeof s.y === 'number') {
+        if (f) place(f, s.x - f.slot.w / 2, s.y - f.slot.h / 2);
+        say(who, '📍 ' + (s.what || 'there') + ' @' + Math.round(s.x) + ',' + Math.round(s.y));
+      } else {
         if (f && Math.random() < 0.75) goInterest(f);
         say(who, s.event.replace(/<[^>]+>/g, '').slice(0, 90));
       }
-      if (s.vision) {
-        const via = (w, x, y, txt) => {
-          const who2 = order[tick++ % 3];
-          const f2 = frames.find((x2) => x2.slot.name === who2);
-          if (f2) place(f2, (x || 0) - f2.slot.w / 2, (y || 0) - f2.slot.h / 2); // steer to coordinates
-          say(who2, txt);
-        };
-        if (typeof s.x === 'number' && typeof s.y === 'number') {
-          via(w, s.x, s.y, '📍 ' + (s.what || 'there') + ' @' + Math.round(s.x) + ',' + Math.round(s.y));
-        } else {
-          via(w, 0, 0, '👁 ' + s.vision.slice(0, 110));
-        }
-      }
-    };
-  } catch {}
+    } else if (s.vision) {
+      const who = order[tick++ % 3];
+      say(who, '👁 ' + s.vision.slice(0, 110));
+    }
+  });
+  dbgLog('transport-ready');
 
   const inject = () => {
     if (frames.length) return;

@@ -38,6 +38,10 @@ const server = Bun.serve({
 				const loc = await locate({ b64, note, key: ep.apiKey });
 				if (loc.x && loc.y) {
 					state.vision = `@${Math.round(loc.x)},${Math.round(loc.y)} ${loc.what || '?'}`;
+					state.x = loc.x;
+					state.y = loc.y;
+					state.what = loc.what || 'something';
+					state.event = `📍 ${loc.what || 'target'} at ${Math.round(loc.x)},${Math.round(loc.y)}`;
 					const msg = JSON.stringify({
 						phase: 'vision',
 						x: loc.x,

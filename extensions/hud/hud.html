@@ -128,9 +128,16 @@
     setTimeout(() => (b.textContent = ''), 6000);
   };
   (async () => {
-    const [clippyAgent, bonziAgent] = await Promise.all([
+    const [clippyAgent, bonziAgent, rowdyAgent] = await Promise.all([
       spawnAgent('Clippy', 'left'),
       spawnAgent('Bonzi', 'right'),
+      spawnAgent('Rowdy', 'left').then((a) => {
+        if (a) {
+          const $el = a._el;
+          if ($el && $el.css) $el.css({ bottom: '190px' });
+        }
+        return a;
+      }),
     ]);
     const present = [clippyAgent, bonziAgent].filter(Boolean).length;
     q('state').textContent = present ? '◉ ' + ['clippy', 'bonzi'].filter((_, i) => [clippyAgent, bonziAgent][i]).join(' + ') + ' live' : '◌ agents offline';

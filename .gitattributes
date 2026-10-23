@@ -1,0 +1,44 @@
+# menagerie — Line-ending + binary normalization (LF everywhere; cmd/bat CRLF)
+* text=auto eol=lf
+
+# Windows batch scripts: cmd.exe needs CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Sources
+*.mjs text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.py text eol=lf
+*.ps1 text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.c text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+
+# Vendored test fixtures (blazehttp corpus)
+*.white binary
+*.black binary
+
+# Binaries and media
+*.exe binary
+*.dll binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.7z binary
+*.woff binary
+*.woff2 binary
+*.db binary
+*.sqlite binary
+
+# Generated / third-party noise
+node_modules/ -text
+bun.lock text eol=lf

@@ -1,0 +1,3 @@
+[submodule "third_party/DefenderControl"]
+	path = third_party/DefenderControl
+	url = https://github.com/SysAdminDoc/DefenderControl.git

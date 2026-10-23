@@ -12,11 +12,18 @@
 //   bun scripts/vision-agent-loop.mjs --before a.webp --after b.webp \
 //       [--model qwen3.6-35b] [--key $FREEINFERENCE_API_KEY]
 const args = process.argv;
-const get = (k, d) => { const i = args.indexOf(k); return i > 0 ? args[i + 1] : d; };
-const model = get("--model", "qwen3.6-35b");
+const get = (k, d) => {
+	const i = args.indexOf(k);
+	return i > 0 ? args[i + 1] : d;
+};
+const model = get('--model', 'qwen3.6-35b');
 const KEY = process.env.FREEINFERENCE_API_KEY;
-if (!KEY) { console.error("FREEINFERENCE_API_KEY not set"); process.exit(1); }
-const before = get("--before"), after = get("--after");
+if (!KEY) {
+	console.error('FREEINFERENCE_API_KEY not set');
+	process.exit(1);
+}
+const before = get('--before'),
+	after = get('--after');
 
 const P_PERCEIVE = `You are a GUI agent viewing ONE screenshot as a 100x100 grid.
 PERCEIVE: list all visible text verbatim.
@@ -29,31 +36,53 @@ Two screenshots of the same page BEFORE and AFTER one action.
 Diff them: list ONLY what actually changed — new fields, error/banner text, navigation, or "NO_CHANGE".
 One bullet per change. Do not describe either screen independently.`;
 
-const img = (path) => `data:image/${path.endsWith(".webp") ? "webp" : "png"};base64,${Bun.file(path).arrayBuffer().then(b => Buffer.from(b).toString("base64"))}`;
+const img = (path) =>
+	`data:image/${path.endsWith('.webp') ? 'webp' : 'png'};base64,${Bun.file(path)
+		.arrayBuffer()
+		.then((b) => Buffer.from(b).toString('base64'))}`;
 
 async function call(prompt, images) {
-  const t0 = Date.now();
-  for (;;) {
-    const res = await fetch("https://freeinference.org/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + KEY, "Content-Type": "application/json", "X-Reasoning-Passthrough": "false" },
-      body: JSON.stringify({
-        model, max_tokens: 500,
-        messages: [{ role: "user", content: [{ type: "text", text: prompt }, ...images.map(u => ({ type: "image_url", image_url: { url: u } }))] }],
-      }),
-    });
-    if (res.status === 429) { await Bun.sleep(1000); continue; }
-    const j = await res.json();
-    return { ms: Date.now() - t0, out: String(j.choices?.[0]?.message?.content || j.error?.message || "").replace(/\s+/g, " ") };
-  }
+	const t0 = Date.now();
+	for (;;) {
+		const res = await fetch('https://freeinference.org/v1/chat/completions', {
+			method: 'POST',
+			headers: {
+				Authorization: 'Bearer ' + KEY,
+				'Content-Type': 'application/json',
+				'X-Reasoning-Passthrough': 'false',
+			},
+			body: JSON.stringify({
+				model,
+				max_tokens: 500,
+				messages: [
+					{
+						role: 'user',
+						content: [
+							{ type: 'text', text: prompt },
+							...images.map((u) => ({ type: 'image_url', image_url: { url: u } })),
+						],
+					},
+				],
+			}),
+		});
+		if (res.status === 429) {
+			await Bun.sleep(1000);
+			continue;
+		}
+		const j = await res.json();
+		return {
+			ms: Date.now() - t0,
+			out: String(j.choices?.[0]?.message?.content || j.error?.message || '').replace(/\s+/g, ' '),
+		};
+	}
 }
 
 console.error(`[vision-agent-loop] model=${model} before=${before} after=${after}`);
 if (before) {
-  const s1 = await call(P_PERCEIVE, [await img(before)]);
-  console.log(JSON.stringify({ stage: 1, ...s1 }));
+	const s1 = await call(P_PERCEIVE, [await img(before)]);
+	console.log(JSON.stringify({ stage: 1, ...s1 }));
 }
 if (after) {
-  const s2 = await call(P_DIFF, [await img(after)]);
-  console.log(JSON.stringify({ stage: 2, ...s2 }));
+	const s2 = await call(P_DIFF, [await img(after)]);
+	console.log(JSON.stringify({ stage: 2, ...s2 }));
 }

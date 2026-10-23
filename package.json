@@ -1,23 +1,28 @@
 {
-  "name": "menagerie",
-  "version": "0.1.0",
-  "private": false,
-  "type": "module",
-  "description": "An automation age spirit-haunted by Clippy — session ops, live in-page HUD with a cast of agents, gate recon, repo ranker. Windows + Linux.",
-  "license": "MIT",
-  "engines": {
-    "bun": ">=1.4",
-    "node": ">=20"
-  },
-  "bin": {
-    "menagerie": "./src/cli/index.mjs"
-  },
-  "scripts": {
-    "test": "bun test",
-    "cli": "bun src/cli/index.mjs"
-  },
-  "dependencies": {
-    "citty": "^0.2.2",
-    "dotenv": "^18.0.9"
-  }
+	"name": "menagerie",
+	"version": "0.1.0",
+	"private": false,
+	"type": "module",
+	"description": "An automation age spirit-haunted by Clippy — session ops, live in-page HUD with a cast of agents, gate recon, repo ranker. Windows + Linux.",
+	"license": "MIT",
+	"engines": {
+		"bun": ">=1.4",
+		"node": ">=20"
+	},
+	"bin": {
+		"menagerie": "./src/cli/index.mjs"
+	},
+	"scripts": {
+		"test": "bun test",
+		"lint": "bun x biome check .",
+		"format": "bun x biome check --write .",
+		"cli": "bun src/cli/index.mjs"
+	},
+	"dependencies": {
+		"citty": "^0.2.2",
+		"dotenv": "^18.0.9"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.6.2"
+	}
 }

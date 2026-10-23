@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# menagerie pre-commit: auto-format + lint-staged via Biome
+set -e
+command -v bun >/dev/null 2>&1 || exit 0
+cd "$(git rev-parse --show-toplevel)"
+# Auto-fix everything staged that biome owns, re-stage the fixes
+bun x biome check --write --staged 2>/dev/null || bun x biome check . --write 2>/dev/null || true
+git add -u 2>/dev/null || true
+true

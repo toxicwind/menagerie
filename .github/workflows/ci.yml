@@ -1,0 +1,19 @@
+name: menagerie-ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Biome format + lint (auto-fix mode = gate on diff)
+        run: bun x biome ci .
+      - name: Test suite
+        run: bun test

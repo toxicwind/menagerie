@@ -6,11 +6,11 @@
 // The panel listens on the overlay server's WebSocket (127.0.0.1:8734) so any
 // pipeline (session-move, ublood flood, benches) can push state into the page.
 // Usage: bun scripts/overlay-inject.mjs [--port 9222] [--hud 8734] [--demo]
-import { readFileSync } from "node:fs";
+import { readFileSync } from 'node:fs';
 
-const cdpPort = process.argv.find(a => a.startsWith("--port="))?.slice(7) || "9222";
-const hudPort = process.argv.find(a => a.startsWith("--hud="))?.slice(6) || 8734;
-const demo = process.argv.includes("--demo");
+const cdpPort = process.argv.find((a) => a.startsWith('--port='))?.slice(7) || '9222';
+const hudPort = process.argv.find((a) => a.startsWith('--hud='))?.slice(6) || 8734;
+const demo = process.argv.includes('--demo');
 
 const INJECT = `
 (() => {
@@ -74,23 +74,42 @@ const INJECT = `
 `;
 
 const targets = await (await fetch(`http://127.0.0.1:${cdpPort}/json/list`)).json();
-const page = targets.find(t => t.type === "page" && !t.url.startsWith("devtools://"));
-if (!page) { console.error("no page target"); process.exit(1); }
+const page = targets.find((t) => t.type === 'page' && !t.url.startsWith('devtools://'));
+if (!page) {
+	console.error('no page target');
+	process.exit(1);
+}
 const ws = new WebSocket(page.webSocketDebuggerUrl);
-let id = 0; const pending = new Map();
-const send = (method, params = {}) => new Promise((res, rej) => { const m = ++id; pending.set(m, { res, rej }); ws.send(JSON.stringify({ id: m, method, params })); });
-ws.onmessage = (ev) => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(m.error.message)) : p.res(m.result); } };
-await new Promise((res, rej) => { ws.onopen = res; ws.onerror = () => rej(new Error("ws")); });
+let id = 0;
+const pending = new Map();
+const send = (method, params = {}) =>
+	new Promise((res, rej) => {
+		const m = ++id;
+		pending.set(m, { res, rej });
+		ws.send(JSON.stringify({ id: m, method, params }));
+	});
+ws.onmessage = (ev) => {
+	const m = JSON.parse(ev.data);
+	if (m.id && pending.has(m.id)) {
+		const p = pending.get(m.id);
+		pending.delete(m.id);
+		m.error ? p.rej(new Error(m.error.message)) : p.res(m.result);
+	}
+};
+await new Promise((res, rej) => {
+	ws.onopen = res;
+	ws.onerror = () => rej(new Error('ws'));
+});
 
 // inject now + on every future navigation (userscript behavior)
-await send("Runtime.evaluate", { expression: INJECT, returnByValue: true });
-await send("Page.enable");
-await send("Page.addScriptToEvaluateOnNewDocument", { source: INJECT });
-console.log("[overlay-inject] HUD injected into", page.url.slice(0, 60), "(rides navigations)");
+await send('Runtime.evaluate', { expression: INJECT, returnByValue: true });
+await send('Page.enable');
+await send('Page.addScriptToEvaluateOnNewDocument', { source: INJECT });
+console.log('[overlay-inject] HUD injected into', page.url.slice(0, 60), '(rides navigations)');
 ws.close();
 
 if (demo) {
-  const { default: spawn } = await import("node:child_process").then(m => m);
-  const dem = spawn("bun", ["scripts/overlay-demo.mjs"], { stdio: "inherit" });
-  await new Promise(r => dem.on("exit", r));
+	const { default: spawn } = await import('node:child_process').then((m) => m);
+	const dem = spawn('bun', ['scripts/overlay-demo.mjs'], { stdio: 'inherit' });
+	await new Promise((r) => dem.on('exit', r));
 }

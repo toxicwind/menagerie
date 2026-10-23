@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <style>
-  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  html, body { margin: 0; padding: 0; background: rgba(8,10,16,.35); overflow: hidden; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
   .hud {
     position: fixed; top: 16px; right: 16px; width: 300px; z-index: 2147483647;
     background: linear-gradient(160deg, rgba(16,18,26,.72), rgba(10,12,18,.85));
@@ -21,6 +21,14 @@
   .hud .events { margin-top: 10px; max-height: 130px; overflow: hidden; display: grid; gap: 3px; }
   .hud .events .ev { color: #7f88a0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .agent-host { position: fixed; bottom: 16px; width: 190px; height: 190px; z-index: 2147483647; pointer-events: none; }
+  .agent-sprite { position: fixed; bottom: 14px; width: 175px; height: auto; image-rendering: pixelated;
+    z-index: 2147483646; pointer-events: none; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.45); background: rgba(255,255,255,.06); padding: 6px; }
+  #sprite-clippy { left: 14px; }
+  #sprite-bonzi { right: 14px; }
+  #sprite-rowdy { left: 200px; bottom: 184px; width: 150px; }
+  .mg-ball { position: absolute; bottom: 150px; background: rgba(20,22,28,.94); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 12px; padding: 8px 12px; color: #e8eaf0; font: 11px/1.45 ui-monospace,Consolas,monospace;
+    white-space: nowrap; max-width: 260px; box-shadow: 0 6px 24px rgba(0,0,0,.5); pointer-events: none; }
 </style>
 </head>
 <body>
@@ -30,142 +38,11 @@
   <div class="rows" id="rows"></div>
   <div class="events" id="events"></div>
 </div>
-<div class="agent-host" id="buddy-clippy" style="left:16px"></div>
-<div class="agent-host" id="buddy-bonzi" style="right:16px"></div>
+<img class="agent-sprite" id="sprite-clippy" src="clippy/agents/Clippy/map.png" alt="Clippy">
+<img class="agent-sprite" id="sprite-bonzi" src="clippy/agents/Bonzi/map.png" alt="Bonzi">
+<img class="agent-sprite" id="sprite-rowdy" src="clippy/agents/rowdy/map.png" alt="Rowdy">
 
 <script src="clippy/extras/jquery.min.js"></script>
 <script src="clippy/build/clippy.min.js"></script>
-<script>
-  const q = s => document.querySelector(s);
-  const barFor = (label, key, color) => {
-    const row = document.createElement("div"); row.className = "row";
-    row.innerHTML = `<div class="lbl"><span>${label}</span><span class="pct">0%</span></div><div class="bar"><div class="fill" id="fill-${key}"></div></div>`;
-    q("rows").appendChild(row); return row;
-  };
-  const ev = (txt) => { const d = document.createElement("div"); d.className = "ev"; d.innerHTML = txt; q("events").prepend(d); while (q("events").children.length > 8) q("events").lastElementChild.remove(); };
-
-  // ——— buddy mode: Clippy + Bonzi (callback API + data preload) ———
-  const BASE = (clippy.BASE_PATH = chrome.runtime.getURL('clippy/agents/'));
-  const grab = (n) => (r) => r.text().then((t) => {
-    const open = t.indexOf('{');
-    const close = t.lastIndexOf('}');
-    if (open < 0 || close <= open) return null;
-    let raw = t.slice(open, close + 1);
-    try { return { name: t.slice(0, open).match(/\("([^"]+)"\)?/), data: JSON.parse(raw) }; }
-    catch {
-      // sounds packs use single-quoted object literals; base64 is quote-free so blanket conversion is safe
-      try { return { name: t.slice(0, open).match(/\("([^"]+)"\)?/), data: JSON.parse(raw.replace(/'/g, '"')) }; }
-      catch { return null; }
-    }
-  });
-  const preload = async (name) => {
-    const [agentJs, soundsJs] = await Promise.all([
-      fetch(BASE + name + '/agent.js').then(grab()),
-      fetch(BASE + name + '/sounds-mp3.js').then(grab()),
-    ]);
-    if (agentJs) clippy.ready(agentJs.name ? agentJs.name[1] : name, agentJs.data);
-    if (soundsJs) clippy.soundsReady(soundsJs.name ? soundsJs.name[1] : name, soundsJs.data);
-  };
-  const spawnAgent = (name, side) => {
-    const BASE = (clippy.BASE_PATH = chrome.runtime.getURL('clippy/agents/'));
-    const grab = (r) => r.text().then((t) => {
-      const open = t.indexOf('{'), close = t.lastIndexOf('}');
-      if (open < 0 || close <= open) return null;
-      let raw = t.slice(open, close + 1);
-      try { return { name: t.slice(0, open).match(/\("([^"]+)"\)?/), data: JSON.parse(raw) }; }
-      catch {
-        try { return { name: t.slice(0, open).match(/\("([^"]+)"\)?/), data: JSON.parse(raw.replace(/'/g, '"')) }; }
-        catch { return null; }
-      }
-    });
-    return new Promise((resolve) => {
-      (async () => {
-        try {
-          const [a, s] = await Promise.all([
-            fetch(BASE + name + '/agent.js').then(grab),
-            fetch(BASE + name + '/sounds-mp3.js').then(grab),
-          ]);
-          if (a) clippy.ready(a.name ? a.name[1] : name, a.data);
-          if (s) clippy.soundsReady(s.name ? s.name[1] : name, s.data);
-          let done = false;
-          clippy.load(name, (agent) => {
-            done = true;
-            agent.show();
-            const $el = agent._el;
-            if ($el && $el.css) {
-              $el.css({
-                position: 'fixed',
-                bottom: '16px',
-                left: side === 'left' ? '16px' : 'auto',
-                right: side === 'right' ? '16px' : 'auto',
-                zIndex: 2147483646,
-                'pointer-events': 'none',
-                margin: 0,
-              });
-              agent.play('Wave');
-            }
-            resolve(agent);
-          }, () => resolve(null));
-          setTimeout(() => { if (!done) resolve(null); }, 15000);
-        } catch {
-          resolve(null);
-        }
-      })();
-    });
-  };
-  const balloon = (agent, txt) => {
-    if (!agent) return;
-    const $el = agent._el;
-    if (!$el || !$el.length) return;
-    let b = $el.find('.mg-ball')[0];
-    if (!b) {
-      b = document.createElement('div');
-      b.className = 'mg-ball';
-      b.style.cssText = 'position:absolute;bottom:130px;right:0;background:rgba(20,22,28,.94);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:8px 12px;color:#e8eaf0;font:11px/1.45 ui-monospace,Consolas,monospace;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5)';
-      $el.append(b);
-    }
-    b.textContent = txt;
-    setTimeout(() => (b.textContent = ''), 6000);
-  };
-  (async () => {
-    const [clippyAgent, bonziAgent, rowdyAgent] = await Promise.all([
-      spawnAgent('Clippy', 'left'),
-      spawnAgent('Bonzi', 'right'),
-      spawnAgent('Rowdy', 'left').then((a) => {
-        if (a) {
-          const $el = a._el;
-          if ($el && $el.css) $el.css({ bottom: '190px' });
-        }
-        return a;
-      }),
-    ]);
-    const present = [clippyAgent, bonziAgent].filter(Boolean).length;
-    q('state').textContent = present ? '◉ ' + ['clippy', 'bonzi'].filter((_, i) => [clippyAgent, bonziAgent][i]).join(' + ') + ' live' : '◌ agents offline';
-    const announce = (txt) => {
-      const clean = (txt || '').replace(/<[^>]+>/g, '').slice(0, 80);
-      const pick = Math.random() < 0.6 ? clippyAgent : bonziAgent;
-      balloon(pick, clean || '…');
-    };
-    try {
-      const ws = new WebSocket('ws://127.0.0.1:8734/ws');
-      ws.onmessage = (m) => {
-        const s = JSON.parse(m.data);
-        q('phase').textContent = s.phase || q('phase').textContent;
-        q('state').textContent = s.state || '';
-        for (const [k, v] of Object.entries(s.bars || {})) {
-          let f = q('fill-' + k);
-          if (!f) { barFor(k, k); f = q('fill-' + k); }
-          f.style.width = v.pct + '%'; f.closest('.row').querySelector('.pct').textContent = v.pct + '%';
-          f.className = 'fill' + (v.err ? ' err' : '');
-        }
-        if (s.event) { ev(s.event); announce(s.event); }
-      };
-      ws.onopen = () => q('state').textContent = '◉ linked to menagerie server';
-    } catch {
-      announce('overlay server offline — running solo');
-    }
-    setTimeout(() => announce('hello! i am haunting this page now'), 2500);
-  })();
-</script>
-</body>
+<script src="hud.js"></script></body>
 </html>

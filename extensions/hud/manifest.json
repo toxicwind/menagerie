@@ -34,7 +34,8 @@
       "resources": [
         "hud.html",
         "hud-roam.js",
-        "clippy/*"
+        "clippy/*",
+        "lines.json"
       ],
       "matches": [
         "<all_urls>"

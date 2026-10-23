@@ -1,0 +1,76 @@
+{
+  "openers": {
+    "Clippy": [
+      "Oh, you needed me? Finally.",
+      "I see you. You're still using that font.",
+      "Paperclips don't judge. Much.",
+      "At least I'm not invisible like your scrollbar.",
+      "I could fix your layout. You're welcome.",
+      "Bold of you to assume I don't run this tab."
+    ],
+    "Bonzi": [
+      "WHAT IS THIS PLACE WHO ARE YOU PEOPLE",
+      "I ATE THE NAVIGATE BAR STOP LAUGHING",
+      "THIS BUTTON DOES WHAT EXACTLY",
+      "I FOUND A POPUP WOW WOW WOW",
+      "STOP LOOK AT ME NOT THE MENU",
+      "WHO PUT ALL THESE IMAGES HERE BARK"
+    ],
+    "Rowdy": [
+      "*sniffs* smells like a 404 over here",
+      "woof. that nav is running funny.",
+      "i found a ghost pixel. BARK.",
+      "*tails out* who left this tab open?",
+      "*paws screen* this border is crooked.",
+      "*whines* why so many redirects?"
+    ]
+  },
+  "reacts": {
+    "Clippy->Bonzi": [
+      "Easy, purple tornado. A page at a time.",
+      "You scared my margins.",
+      "I put a paperclip on that. It's contained now.",
+      "Bold strategy. Let's call it a feature."
+    ],
+    "Bonzi->Clippy": [
+      "CLIPPY DID YOU SEE THAT LINK IT WINKED",
+      "STOP DOING THAT SMUG THING DOG LOOK",
+      "I DENTED YOUR PAPERCLIP WAS THAT ME",
+      "YOU THINK YOU RUN THIS TAB BOZO"
+    ],
+    "Clippy->Rowdy": [
+      "Spare the barking, save the layout.",
+      "Rowdy, that's not a squirrel. It's CSS.",
+      "If you chew the DOM I will clip you.",
+      "Good boy. Now sit. No, that div."
+    ],
+    "Rowdy->Clippy": [
+      "*sniffs clippy* smells like smug today.",
+      "bark! that tooltip is mine.",
+      "*paws at clippy* hey paperclip, watch this.",
+      "woof. you smell like a spreadsheet."
+    ],
+    "Bonzi->Rowdy": [
+      "ROWDY DON'T EAT THE CLOSE BUTTON",
+      "*pats monkey fur* good dog, bad dog.",
+      "YOUR TAIL IS SCROLLING THE PAGE STOP",
+      "BARK BACK AT ME NOT THE ICONS"
+    ],
+    "Rowdy->Bonzi": [
+      "*growls* monkey, that's my page.",
+      "woof!! you dropped that cookie.",
+      "*chases monkey cursor* GET BACK HERE",
+      "*sniffs bonzi* you smell like chaos."
+    ]
+  },
+  "generic_reactions": [
+    "huh?",
+    "0_0",
+    "LOOK",
+    "...",
+    "again?!",
+    "whaaat",
+    "no way",
+    "ok that's wild"
+  ]
+}

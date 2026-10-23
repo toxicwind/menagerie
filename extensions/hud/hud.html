@@ -7,10 +7,14 @@
   #agent-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
   img { max-width: 100%; max-height: 100%; image-rendering: pixelated; pointer-events: none;
     border-radius: 12px; background: rgba(255,255,255,.05); }
+  body[data-agent="Clippy"] { filter: drop-shadow(0 0 6px rgba(79,157,255,.55)); }
+  body[data-agent="Bonzi"] { filter: drop-shadow(0 0 6px rgba(176,110,255,.55)); }
+  body[data-agent="Rowdy"] { filter: drop-shadow(0 0 6px rgba(217,160,102,.55)); }
 </style>
 </head>
 <body>
 <div id="agent-box"></div>
+<script>document.body.dataset.agent = new URLSearchParams(location.search).get('agent') || 'Clippy';</script>
 <script src="hud.js"></script>
 </body>
 </html>

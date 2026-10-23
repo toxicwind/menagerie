@@ -3,7 +3,6 @@
 // with phases, arrow progress bars and event ticks so you can SEE it dance.
 // Usage: bun scripts/overlay-demo.mjs [--port 8734] [--seconds 20]
 import gradient from 'gradient-string';
-import { success } from 'log-symbols';
 
 const port = Number(process.argv.find((a) => a.startsWith('--port='))?.slice(7)) || 8734;
 const total = Number(process.argv.find((a) => a.startsWith('--seconds='))?.slice(9)) || 20;
@@ -46,6 +45,6 @@ await post({
 	phase: 'done',
 	state: 'complete',
 	bars: { demo: { pct: 100 } },
-	event: 'session move complete ' + success,
+	event: 'session move complete ✓',
 });
 console.log(gradient.mind('demo complete — overlay stayed glassy ♥'));

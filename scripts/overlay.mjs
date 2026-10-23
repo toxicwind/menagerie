@@ -8,7 +8,7 @@ const port = Number(process.argv.find((a) => a.startsWith('--port='))?.slice(7))
 import { file } from 'bun';
 
 const html = await Bun.file(new URL('../overlay.html', import.meta.url)).text();
-const clippyRoot = new URL('../../vendor/clippy.js/', import.meta.url);
+const clippyRoot = new URL('../third_party/clippy.js/', import.meta.url);
 
 const clients = new Set();
 const server = Bun.serve({
@@ -22,6 +22,8 @@ const server = Bun.serve({
 			const f = file(new URL(rel, clippyRoot));
 			return f.exists().then((ok) => (ok ? new Response(f) : new Response('missing', { status: 404 })));
 		}
+		if (url.pathname === '/hud.crx') return new Response(Bun.file(new URL('../extensions/hud.crx', import.meta.url)));
+		if (url.pathname === '/updates.xml') return new Response(Bun.file(new URL('../extensions/updates.xml', import.meta.url)));
 		if (url.pathname === '/ws') {
 			if (srv.upgrade(req)) return undefined;
 			return new Response('upgrade failed', { status: 500 });

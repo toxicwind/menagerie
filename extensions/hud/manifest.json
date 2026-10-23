@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "menagerie hud",
+  "version": "0.2.0",
+  "description": "An automation age spirit-haunted by Clippy. Glass HUD + agent cast (Clippy, Bonzi, Links…) over every page.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "hud.html",
+        "clippy/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

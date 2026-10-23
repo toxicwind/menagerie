@@ -42,19 +42,21 @@
   <div class="rows" id="rows"></div>
   <div class="events" id="events"></div>
 </div>
+<script src="/clippy/extras/jquery.min.js"></script>
+<script src="/clippy/build/clippy.min.js"></script>
 <script>
-  const $ = s => document.querySelector(s);
+  const q = s => document.querySelector(s);
   const barFor = (label, key, color) => {
     const row = document.createElement("div"); row.className = "row";
     row.innerHTML = `<div class="lbl"><span>${label}</span><span class="pct">0%</span></div><div class="bar"><div class="fill" id="fill-${key}"></div></div>`;
-    $("rows").appendChild(row); return row;
+    q("rows").appendChild(row); return row;
   };
-  const ev = (txt) => { const d = document.createElement("div"); d.className = "ev"; d.innerHTML = txt; $("events").prepend(d); while ($("events").children.length > 12) $("events").lastElementChild.remove(); };
+  const ev = (txt) => { const d = document.createElement("div"); d.className = "ev"; d.innerHTML = txt; q("events").prepend(d); while (q("events").children.length > 12) q("events").lastElementChild.remove(); };
   const ws = new WebSocket(`ws://${location.host}`);
   ws.onmessage = (m) => {
     const s = JSON.parse(m.data);
-    $("phase").textContent = s.phase || $("phase").textContent;
-    $("state").textContent = s.state || "";
+    q("phase").textContent = s.phase || q("phase").textContent;
+    q("state").textContent = s.state || "";
     for (const [k, v] of Object.entries(s.bars || {})) {
       let f = $("fill-" + k);
       if (!f) { barFor(k, k); f = $("fill-" + k); }
@@ -63,7 +65,57 @@
     }
     if (s.event) ev(s.event);
   };
-  ws.onopen = () => $("state").textContent = "◉ live";
+  ws.onopen = () => q("state").textContent = "◉ live";
+  // ——— menagerie buddy mode: Clippy + Bonzi side by side ———
+  const buddy = ({ name, side, hostId }) => {
+    const host = document.createElement("div");
+    host.id = hostId;
+    host.style.cssText = `position:fixed;bottom:${side === "left" ? "18px" : "18px"};${side}:18px;z-index:9999;width:180px;height:180px;pointer-events:none`;
+    document.body.appendChild(host);
+    window.clippy.BASE_PATH = `/clippy/agents/`;
+    window.clippy.load(name, host);
+    return new Promise((res) => {
+      const t0 = Date.now();
+      const iv = setInterval(() => {
+        if (host.querySelector("canvas") || host.querySelector("img")) { clearInterval(iv); res(host); }
+        else if (Date.now() - t0 > 15000) { clearInterval(iv); res(null); }
+      }, 300);
+    });
+  };
+  (async () => {
+    const agents = await Promise.all([
+      buddy({ name: "Clippy", side: "left", hostId: "buddy-clippy" }),
+      buddy({ name: "Bonzi", side: "right", hostId: "buddy-bonzi" }),
+    ]);
+    const [c, b] = agents;
+    if (!c && !b) return;
+    window.__speak = (who, txt) => {
+      const h = who === "clippy" ? c : b;
+      if (!h) return;
+      const x = h.closest ? h : h;
+      // show balloon via a tiny overlay div on the host
+      let balloon = document.getElementById("ball-" + who);
+      if (!balloon) {
+        balloon = document.createElement("div");
+        balloon.id = "ball-" + who;
+        balloon.style.cssText = "position:absolute;bottom:150px;left:50%;transform:translateX(-50%);background:rgba(20,22,28,.92);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 14px;color:#e8eaf0;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5)";
+        h.appendChild(balloon);
+      }
+      balloon.textContent = txt;
+      setTimeout(() => (balloon.textContent = ""), 6000);
+    };
+    const oldEv = ws.onmessage;
+    ws.onmessage = (m) => {
+      oldEv(m);
+      const s = JSON.parse(m.data);
+      if (s.event) {
+        const txt = s.event.replace(/<[^>]+>/g, "");
+        if (s.phase === "done") { __speak("clippy", "Done! 🖇️"); window.clippy && c && c.animate("Congratulate"); }
+        else if (Math.random() < 0.5) { __speak("clippy", txt.slice(0, 90)); c && c.animate("GestureDown"); }
+        else { __speak("bonzi", txt.slice(0, 90)); b && b.animate("GestureUp"); }
+      }
+    };
+  })();
 </script>
 </body>
 </html>

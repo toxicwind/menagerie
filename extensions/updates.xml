@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
+  <app appid="05b1fffb9bbc13c6a64fc985ee8a2414">
+    <updatecheck codebase="http://127.0.0.1:8734/hud.crx" version="0.2.0"/>
+  </app>
+</gupdate>

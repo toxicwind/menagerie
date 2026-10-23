@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  .hud {
+    position: fixed; top: 16px; right: 16px; width: 300px; z-index: 2147483647;
+    background: linear-gradient(160deg, rgba(16,18,26,.72), rgba(10,12,18,.85));
+    border: 1px solid rgba(122, 162, 247, .35); border-radius: 18px; padding: 14px 16px;
+    backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    color: #e8eaf0; font-size: 12px; pointer-events: none;
+  }
+  .hud .phase { font-size: 13px; font-weight: 700; letter-spacing: .4px; color: #9ecbff; }
+  .hud .state { margin-top: 3px; color: #b9c2d4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hud .rows { margin-top: 10px; display: grid; gap: 7px; }
+  .hud .row .lbl { display: flex; justify-content: space-between; color: #8f98ad; font-size: 11px; margin-bottom: 3px; }
+  .hud .row .bar { height: 6px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .hud .row .bar .fill { height: 100%; width: 0; background: linear-gradient(90deg, #4f9dff, #7d5cff); transition: width .45s ease; }
+  .hud .row .bar .fill.err { background: linear-gradient(90deg, #ff5d5d, #ff8a5c); }
+  .hud .events { margin-top: 10px; max-height: 130px; overflow: hidden; display: grid; gap: 3px; }
+  .hud .events .ev { color: #7f88a0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-host { position: fixed; bottom: 16px; width: 190px; height: 190px; z-index: 2147483647; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="hud">
+  <div class="phase" id="phase">menagerie</div>
+  <div class="state" id="state">◌ waiting…</div>
+  <div class="rows" id="rows"></div>
+  <div class="events" id="events"></div>
+</div>
+<div class="agent-host" id="buddy-clippy" style="left:16px"></div>
+<div class="agent-host" id="buddy-bonzi" style="right:16px"></div>
+
+<script src="clippy/extras/jquery.min.js"></script>
+<script src="clippy/build/clippy.min.js"></script>
+<script>
+  const q = s => document.querySelector(s);
+  const barFor = (label, key, color) => {
+    const row = document.createElement("div"); row.className = "row";
+    row.innerHTML = `<div class="lbl"><span>${label}</span><span class="pct">0%</span></div><div class="bar"><div class="fill" id="fill-${key}"></div></div>`;
+    q("rows").appendChild(row); return row;
+  };
+  const ev = (txt) => { const d = document.createElement("div"); d.className = "ev"; d.innerHTML = txt; q("events").prepend(d); while (q("events").children.length > 8) q("events").lastElementChild.remove(); };
+
+  // ——— buddy mode: Clippy + Bonzi ———
+  const BASE = clippy.BASE_PATH = chrome.runtime.getURL('clippy/agents/');
+  const loadAgent = (name, hostId) => new Promise((res) => {
+    const host = document.getElementById(hostId);
+    let done = false;
+    clippy.load(name, host, () => { done = true; res(host); }, { path: BASE + name + '/', soundPath: BASE });
+    setTimeout(() => { if (!done) res(null); }, 20000);
+  });
+  const balloon = (host, who, txt) => {
+    if (!host) return;
+    let b = document.getElementById('ball-' + who);
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'ball-' + who;
+      b.style.cssText = 'position:absolute;bottom:150px;left:50%;transform:translateX(-50%);background:rgba(20,22,28,.94);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:8px 12px;color:#e8eaf0;font:11px/1.45 ui-monospace,Consolas,monospace;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+      host.appendChild(b);
+    }
+    b.textContent = txt;
+    setTimeout(() => (b.textContent = ''), 6000);
+  };
+  (async () => {
+    const [cHost, bHost] = await Promise.all([loadAgent('Clippy', 'buddy-clippy'), loadAgent('Bonzi', 'buddy-bonzi')]);
+    q('state').textContent = cHost && bHost ? '◉ clippy + bonzi live' : (cHost ? '◉ clippy live' : '◌ agents offline');
+
+    const announce = (txt) => {
+      const clean = (txt || '').replace(/<[^>]+>/g, '').slice(0, 80);
+      if (Math.random() < 0.6) { balloon(cHost, 'clippy', clean); }
+      else { balloon(bHost, 'bonzi', clean); }
+    };
+
+    // state feed: try the menagerie overlay server, else demo locally
+    try {
+      const ws = new WebSocket('ws://127.0.0.1:8734/ws');
+      ws.onmessage = (m) => {
+        const s = JSON.parse(m.data);
+        q('phase').textContent = s.phase || q('phase').textContent;
+        q('state').textContent = s.state || '';
+        for (const [k, v] of Object.entries(s.bars || {})) {
+          let f = q('fill-' + k);
+          if (!f) { barFor(k, k); f = q('fill-' + k); }
+          f.style.width = v.pct + '%'; f.closest('.row').querySelector('.pct').textContent = v.pct + '%';
+          f.className = 'fill' + (v.err ? ' err' : '');
+        }
+        if (s.event) { ev(s.event); announce(s.event); }
+      };
+      ws.onopen = () => q('state').textContent = '◉ linked to menagerie server';
+    } catch { announce('overlay server offline — running solo'); }
+
+    // ambient: greet the page
+    setTimeout(() => announce('hello! i am haunting this page now'), 2500);
+  })();
+</script>
+</body>
+</html>

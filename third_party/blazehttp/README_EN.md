@@ -6,19 +6,18 @@
 简体中文</a></h4>
 
 BlazeHTTP stands as a user-friendly WAF **protection efficacy evaluation** tool.
-
 - 📦 **Abundant Samples**: Currently, a total of **33669** samples are available, with continuous updates in progress...
 - 🚀 **No Configuration Required**: Offers both a **graphical interface** and a command-line version, facilitating direct downloads of precompiled versions through Releases, or the option to clone the code and compile locally.
 - 📖 **Exportable Reports**: Generates comprehensive reports on the execution results of all samples, including sample attributes, execution time, status codes, interception status, and more.
 
 ## Testing Metrics
 
-|  Metric   | Description  | Calculation Method  |
-|  ----  | ----  | ----  |
-| Detection Rate  | Reflects the comprehensiveness of WAF detection capabilities, indicating "missed detections" if none are found. | Number of attack sample interceptions  |
-| False Positive Rate  | Reflects interference with normal traffic, unreliable results being deemed "false positives". | Number of normal sample interceptions  |
-| Accuracy  | The accuracy metric combines detection and false positive rates, preventing undue focus on either missed detections or false positives. |  |
-| Detection Timing  | Reflects WAF performance, with greater time consumption indicating poorer performance. |  |
+| Metric              | Description                                                                                                                             | Calculation Method                    |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| Detection Rate      | Reflects the comprehensiveness of WAF detection capabilities, indicating "missed detections" if none are found.                         | Number of attack sample interceptions |
+| False Positive Rate | Reflects interference with normal traffic, unreliable results being deemed "false positives".                                           | Number of normal sample interceptions |
+| Accuracy            | The accuracy metric combines detection and false positive rates, preventing undue focus on either missed detections or false positives. |                                       |
+| Detection Timing    | Reflects WAF performance, with greater time consumption indicating poorer performance.                                                  |                                       |
 
 ## Sample Instances
 
@@ -52,15 +51,15 @@ Connection: close
 
 ### [CloudFlare](https://www.cloudflare.com/) vs [ModSecurity](https://github.com/owasp-modsecurity/ModSecurity) vs [SafeLine](https://waf.chaitin.com/)
 
-| Metric | CloudFlare, Free Version | ModSecurity, PARANOIA Level 1 | ModSecurity,  PARANOIA Level 4 | SafeLine, Free Version, Balance Mode | SafeLine, Free Version, Strict Mode |
-| --- | --- | --- | --- | --- | --- |
-| Total Samples | 33669 | 33669 | 33669 | 33669 | 33669 |
-| Successful | 33350 | 33669 | 33669 | 33669 | 33669 |
-| Errors | 319 | 0 | 0 | 0 | 0 |
-| **Detection Rate (higher is better)** | 10.70% (Total Malicious Samples: 570, Correctly Intercepted: 61, Missed Detections: 509) | 69.74% (Total Malicious Samples: 575, Correctly Intercepted: 401, Missed Detections: 174) | 🏆 **94.61%** (Total Malicious Samples: 575, Correctly Intercepted: 544, Missed Detections: 31) | 71.65% (Total Malicious Samples: 575, Correctly Intercepted: 412, Missed Detections: 163) | 76.17% (Total Malicious Samples: 575, Correctly Intercepted: 438, Missed Detections: 137) |
-| **False Positive Rate (lower is better)** | 0.07% (Total Normal Samples: 32780, Correctly Passed: 32757, False Positives: 23) | 17.58% (Total Normal Samples: 33094, Correctly Passed: 27275, False Positives: 5819) | 52.46% (Total Normal Samples: 33094, Correctly Passed: 15732, False Positives: 17362) | 🏆 **0.07%** (Total Normal Samples: 33094, Correctly Passed: 33071, False Positives: 23) | 0.22% (Total Normal Samples: 33094, Correctly Passed: 33021, False Positives: 73) |
-| **Accuracy (higher is better)** | 98.40% (Correct Interceptions + Correct Passes) / Total Samples | 82.20% (Correct Interceptions + Correct Passes) / Total Samples | 48.34% (Correct Interceptions + Correct Passes) / Total Samples | 🏆 **99.45%** (Correct Interceptions + Correct Passes) / Total Samples | 99.38% (Correct Interceptions + Correct Passes) / Total Samples |
-| Average Time | 288.96 milliseconds | 31.15 milliseconds | 28.89 milliseconds | 70.05 milliseconds | 64.34 milliseconds |
+| Metric                                    | CloudFlare, Free Version                                                                 | ModSecurity, PARANOIA Level 1                                                             | ModSecurity,  PARANOIA Level 4                                                                  | SafeLine, Free Version, Balance Mode                                                      | SafeLine, Free Version, Strict Mode                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Total Samples                             | 33669                                                                                    | 33669                                                                                     | 33669                                                                                           | 33669                                                                                     | 33669                                                                                     |
+| Successful                                | 33350                                                                                    | 33669                                                                                     | 33669                                                                                           | 33669                                                                                     | 33669                                                                                     |
+| Errors                                    | 319                                                                                      | 0                                                                                         | 0                                                                                               | 0                                                                                         | 0                                                                                         |
+| **Detection Rate (higher is better)**     | 10.70% (Total Malicious Samples: 570, Correctly Intercepted: 61, Missed Detections: 509) | 69.74% (Total Malicious Samples: 575, Correctly Intercepted: 401, Missed Detections: 174) | 🏆 **94.61%** (Total Malicious Samples: 575, Correctly Intercepted: 544, Missed Detections: 31) | 71.65% (Total Malicious Samples: 575, Correctly Intercepted: 412, Missed Detections: 163) | 76.17% (Total Malicious Samples: 575, Correctly Intercepted: 438, Missed Detections: 137) |
+| **False Positive Rate (lower is better)** | 0.07% (Total Normal Samples: 32780, Correctly Passed: 32757, False Positives: 23)        | 17.58% (Total Normal Samples: 33094, Correctly Passed: 27275, False Positives: 5819)      | 52.46% (Total Normal Samples: 33094, Correctly Passed: 15732, False Positives: 17362)           | 🏆 **0.07%** (Total Normal Samples: 33094, Correctly Passed: 33071, False Positives: 23)  | 0.22% (Total Normal Samples: 33094, Correctly Passed: 33021, False Positives: 73)         |
+| **Accuracy (higher is better)**           | 98.40% (Correct Interceptions + Correct Passes) / Total Samples                          | 82.20% (Correct Interceptions + Correct Passes) / Total Samples                           | 48.34% (Correct Interceptions + Correct Passes) / Total Samples                                 | 🏆 **99.45%** (Correct Interceptions + Correct Passes) / Total Samples                    | 99.38% (Correct Interceptions + Correct Passes) / Total Samples                           |
+| Average Time                              | 288.96 milliseconds                                                                      | 31.15 milliseconds                                                                        | 28.89 milliseconds                                                                              | 70.05 milliseconds                                                                        | 64.34 milliseconds                                                                        |
 
 ## Installation and Usage
 
@@ -82,7 +81,8 @@ Precompiled artifacts from GitHub CI have been uploaded to Releases for direct d
 **GUI** (MacOS & Windows)
 
 > If encountering errors like **untrusted** or **moved to trash** on MacOS, execute the following command before relaunching:
-> ``` bash
+>
+> ```bash
 > sudo xattr -d com.apple.quarantine blazehttp_1.0.0_darwin_arm64.app
 > ```
 

@@ -1,0 +1,23 @@
+# HAND.toml — rank-hand: repo ranker
+
+[hand]
+name = "rank"
+version = "0.1.0"
+author = "menagerie"
+category = "development"
+description = "Scores a repo or an org's repo list for naming, README-max, skill coverage (star-whore index)."
+
+[hand.schedule]
+kind = "manual"
+run_on_install = false
+
+[hand.requirements]
+env = []
+optional_env = ["GH_TOKEN"]
+
+[hand.tools]
+allow = ["repo.fetch", "repo.score", "repo.compare", "repo.report"]
+
+[hand.guardrails]
+approval_required = []
+never = ["repo.mutate"]

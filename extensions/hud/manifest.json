@@ -4,7 +4,10 @@
   "version": "0.2.0",
   "description": "An automation age spirit-haunted by Clippy. Glass HUD + agent cast (Clippy, Bonzi, Links…) over every page.",
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab",
+    "tabs",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -30,5 +33,8 @@
         "<all_urls>"
       ]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }

@@ -1,0 +1,23 @@
+# HAND.toml — recon-hand: gate recon
+
+[hand]
+name = "recon"
+version = "0.1.0"
+author = "menagerie"
+category = "development"
+description = "Monitors LLM provider gates: 429 classification, concurrency probing, race-2 slot verification on a schedule."
+
+[hand.schedule]
+kind = "interval"
+period_seconds = 300
+run_on_install = false
+
+[hand.requirements]
+env = ["FREEINFERENCE_API_KEY"]
+
+[hand.tools]
+allow = ["gate.probe", "gate.classify", "gate.race", "gate.report"]
+
+[hand.guardrails]
+approval_required = []
+never = ["gate.flood_abusive"]

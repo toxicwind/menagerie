@@ -13,7 +13,7 @@ const clippyRoot = new URL('../third_party/clippy.js/', import.meta.url);
 const clients = new Set();
 const server = Bun.serve({
 	port,
-	fetch(req, srv) {
+	async fetch(req, srv) {
 		const url = new URL(req.url);
 		if (url.pathname === '/') return new Response(html, { headers: { 'Content-Type': 'text/html' } });
 		if (url.pathname === '/state') return new Response(JSON.stringify(state));
@@ -29,12 +29,33 @@ const server = Bun.serve({
 			return new Response('upgrade failed', { status: 500 });
 		}
 		if (url.pathname === '/post' && req.method === 'POST') {
-			return req.json().then((body) => {
-				publish(body);
-				return new Response('ok');
-			});
+			const body = await req.json();
+			Object.assign(state, body);
+			const msg = JSON.stringify(body);
+			for (const c of clients) c.send(msg);
+			return new Response('ok');
 		}
-		return new Response('not found', { status: 404 });
+		if (url.pathname === '/vision' && req.method === 'POST') {
+			// vision-fix: extension screenshot -> vision-kit (qwen3.6-35b) -> HUD narration
+			try {
+				const { b64, note, persona, prompt, tone } = await req.json();
+				const { narratePage } = await import('vision-kit');
+				const { resolveOpenAICompat } = await import('../src/vendor-omp/openai-compat.mjs');
+				const ep = resolveOpenAICompat() || {};
+				const { said, persona: used } = await narratePage({ b64, note: note || 'What is on this page?', persona: persona || 'ghost', tone, prompt, key: ep.apiKey });
+				if (said) {
+					state.vision = said.slice(0, 160);
+					const msg = JSON.stringify({ phase: 'vision', state: said.slice(0, 160), event: said.slice(0, 140), persona: used });
+					for (const c of clients) c.send(msg);
+				}
+				return new Response(JSON.stringify({ said: said.slice(0, 200) }), {
+					headers: { 'Content-Type': 'application/json' },
+				});
+			} catch (e) {
+				return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
+			}
+		}
+return new Response('not found', { status: 404 });
 	},
 	websocket: {
 		open(ws) {

@@ -1,0 +1,23 @@
+# HAND.toml — move-hand: session movement
+
+[hand]
+name = "move"
+version = "0.1.0"
+author = "menagerie"
+category = "productivity"
+description = "Sweeps the day's scattered work into one ordered session log (kilo/omp-flavored, remote-safe)."
+
+[hand.schedule]
+kind = "manual"
+run_on_install = false
+
+[hand.requirements]
+env = []
+optional_env = ["MENAGERIE_MOVE_TARGET"]
+
+[hand.tools]
+allow = ["session.collect", "session.dedupe", "session.write", "session.push"]
+
+[hand.guardrails]
+approval_required = ["session.push_remote"]
+never = ["session.export_credentials", "session.delete_source"]

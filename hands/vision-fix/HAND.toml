@@ -1,0 +1,37 @@
+# HAND.toml — vision-fix: the page-haunting vision hand
+# OpenFang-style layout: manifest + playbook prompt + SKILL.md + guardrails.
+
+[hand]
+name = "vision-fix"
+version = "0.1.0"
+author = "menagerie"
+category = "development"
+description = "Screenshots the active tab every 12s, narrates it in a rotating persona (clippy/bonzi/links/rover), and performs benign HAND actions (dismiss, focus, scroll) — the eyes + hands of the HUD."
+
+[hand.schedule]
+kind = "alarm"
+period_seconds = 12
+run_on_install = true
+
+[hand.requirements]
+env = ["FREEINFERENCE_API_KEY"]
+optional_env = ["MENAGERIE_AUTOPILOT"]
+
+[hand.tools]
+allow = [
+  "vision.pulse",      # snapshot title/url/heading/forms/errors of the active tab
+  "vision.narrate",    # screenshot -> qwen3.6-35b -> one-line persona narration
+  "hand.dismiss",      # dismiss consent/dialog banners
+  "hand.focus",        # focus the primary input
+  "hand.scroll",       # scroll main content into view
+  "hand.snapshot",     # structured DOM census (forms/inputs/links/errors)
+]
+
+[hand.guardrails]
+approval_required = ["hand.type", "hand.click", "hand.purchase"]
+autopilot_gate = "MENAGERIE_AUTOPILOT=1"   # only benign actions without it
+never = ["hand.purchase", "hand.submit_payment"]
+
+[hand.metrics]
+counters = ["narrations", "actions_taken", "banners_dismissed"]
+gauges = ["last_vision_ms", "last_error"]

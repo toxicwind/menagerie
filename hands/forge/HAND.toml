@@ -1,0 +1,23 @@
+# HAND.toml — forge-hand: agent forge
+
+[hand]
+name = "forge"
+version = "0.1.0"
+author = "menagerie"
+category = "content"
+description = "Mints custom HUD agents: prompt -> sprite grid -> clippy.js agent dir (image provider via IMAGES_API_URL or omp-grab)."
+
+[hand.schedule]
+kind = "manual"
+run_on_install = false
+
+[hand.requirements]
+env = []
+optional_env = ["IMAGES_API_URL", "IMAGES_API_KEY"]
+
+[hand.tools]
+allow = ["forge.resolve_provider", "forge.generate", "forge.emit_agent", "forge.validate"]
+
+[hand.guardrails]
+approval_required = []
+never = ["forge.overwrite_source"]

@@ -30,12 +30,14 @@ const name = (prompt) =>
 		.replace(/^-+|-+$/g, '')
 		.slice(0, 24) || 'custom-agent';
 
-/** Call an OpenAI-compatible /v1/images/generations endpoint. */
+/** Call an OpenAI-compatible /v1/images/generations endpoint (key optional). */
 async function generateImage(endpoint, apiKey, prompt, model, size) {
 	const url = endpoint.replace(/\/+$/, '') + '/v1/images/generations';
+	const headers = { 'content-type': 'application/json' };
+	if (apiKey) headers.authorization = `Bearer ${apiKey}`;
 	const res = await fetch(url, {
 		method: 'POST',
-		headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+		headers,
 		body: JSON.stringify({ model, prompt, n: 1, size }),
 	});
 	if (!res.ok) {
